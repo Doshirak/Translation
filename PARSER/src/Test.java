@@ -95,6 +95,5 @@ public class Test extends TestCase {
         } catch (Parser.ParserException e) {
             fail();
         }
-
     }
 }

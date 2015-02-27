@@ -20,8 +20,6 @@ public class Parser {
         terminals = new ArrayList<Character>();
         ExpressionTerminals.add('+');
         ExpressionTerminals.add('-');
-        ExpressionTerminals.add(')');
-        ExpressionTerminals.add('(');
         TermTerminals.add('*');
         FactorTerminals.add('^');
         PowerTerminals.add('-');
@@ -36,7 +34,7 @@ public class Parser {
     }
 
     public boolean isTerm() {
-        return terminals.contains((char) lexer.read());
+        return terminals.contains((char) lexer.read()) && !isAtomTerm();
     }
 
     public boolean isExpressionTerm() {
@@ -59,6 +57,10 @@ public class Parser {
         return AtomTerminals.contains((char) lexer.read());
     }
 
+    public boolean isAtom() {
+        return lexer.isDigit() || isAtomTerm();
+    }
+
     public int parse() throws ParserException {
         return parseExpression();
     }
@@ -75,20 +77,20 @@ public class Parser {
                         sign = 1;
                     } else if ((char) lexer.read() == '-') {
                         sign = -1;
-                    } else if ((char) lexer.read() == ')') {
-                        parse = false;
-                    } else if ((char) lexer.read() == '(') {
-                        lexer.skip();
-                        temp += sign * parseExpression();
                     }
                     lexer.skip();
+                } else if ((char) lexer.read() == ')') {
+                    lexer.skip();
+                    return temp;
                 } else {
                     throw new ParserException();
                 }
             } else if (lexer.read() < 0) {
                 parse = false;
-            } else if (lexer.isDigit()) {
+            } else if (isAtom()) {
                 temp += sign * parseTerm();
+            } else if ((char) lexer.read() == ')') {
+                return temp;
             } else {
                 throw new ParserException();
             }
@@ -108,7 +110,7 @@ public class Parser {
                 }
             } else if (lexer.read() < 0) {
                 parse = false;
-            } else if (lexer.isDigit()) {
+            } else if (isAtom()) {
                 temp *= parseFactor();
             } else {
                 throw new ParserException();
@@ -132,7 +134,7 @@ public class Parser {
                 }
             } else if (lexer.read() < 0) {
                 parse = false;
-            } else if (lexer.isDigit()) {
+            } else if (isAtom()) {
                 if (nextPower) {
                     power = parseFactor();
                 } else {
@@ -163,7 +165,7 @@ public class Parser {
                 }
             } else if (lexer.read() < 0) {
                 parse = false;
-            } else if (lexer.isDigit()) {
+            } else if (isAtom()) {
                 setTemp = true;
                 temp = parseAtom();
             } else {
@@ -175,23 +177,21 @@ public class Parser {
 
     public int parseAtom() throws ParserException {
         int temp = 0;
-//        if (isTerm()) {
-//            if (isAtomTerm()) {
-//                if ((char) lexer.read() == '(') {
-//                    lexer.skip();
-//                    temp = parseExpression();
-//                }
-//            } else {
-//                throw new ParserException();
-//            }
-//        } else {
-        StringBuilder builder = new StringBuilder();
-        do {
-            builder.append((char) lexer.read());
-            lexer.skip();
-        } while (!isTerm() && (lexer.read() > 0));
-        temp = Integer.parseInt(builder.toString());
-//        }
+        if (isAtomTerm()) {
+            if ((char) lexer.read() == '(') {
+                lexer.skip();
+                temp = parseExpression();
+            }
+        } else if (isTerm()) {
+            throw new ParserException();
+        } else {
+            StringBuilder builder = new StringBuilder();
+            do {
+                builder.append((char) lexer.read());
+                lexer.skip();
+            } while (!isTerm() && (lexer.read() > 0));
+            temp = Integer.parseInt(builder.toString());
+        }
         return temp;
     }
 
