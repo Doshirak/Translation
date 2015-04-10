@@ -73,6 +73,7 @@ public class Test extends TestCase {
     public void testExp() {
         try {
             assertEquals(parse("2^2"), 4);
+            assertEquals(parse("2^2^2"), 16);
             assertEquals(parse("2^-1"), 1);
         } catch (Parser.ParserException e) {
             fail();

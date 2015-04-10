@@ -1,0 +1,52 @@
+<Text> ::=
+	<Declaration> "program:" <ExecCode> ;
+<ExecCode> ::=
+	<ExecCode> ";" <ExecCode> |
+	<ExecCode> "U" <ExecCode> |
+	<ExecCode> "*" |
+	<Body> |
+	[EMPTY] ;
+<Body> ::=
+	<Assignment> |
+	<Test> |
+	<Operator> ;
+<Assignment> ::=
+	[VARIABLE] ":=" <Expression> ;
+<Test> ::= 
+	<Expression> ">" <Expression> |
+	<Expression> "<" <Expression> |
+	<Expression> "=" <Expression> |
+	<Expression> ">=" <Expression> |
+	<Expression> "<=" <Expression> ;
+<Operator> ::= 
+	"print" [VARIABLE] |
+	"input" [VARIABLE] |
+	"upd" [VARIABLE] "[" [CONSTANT] "]" |
+	"app" [VARIABLE] "[" [CONSTANT] "]" ;
+<Declaration> ::=
+    <Declaration> "," <Declaration> |
+	"var" [VARIABLE] ":" <Type> |
+	[EMPTY] ;
+<Type> ::=
+	"int" ;
+<Expression> ::= 
+	<Term> "+" <Term> |
+	<Term> "-" <Term> |
+	<Term> ;
+<Term> ::= 
+	<Factor> "*" <Factor> |
+	<Factor> "/" <Factor> |
+	<Factor> ;
+<Factor> ::=
+	<Power> "^" <Factor> |
+	<Power> ;
+<Power> ::=
+	<Atom> |
+	"-" <Atom> ;
+<Atom> ::=
+	[CONSTANT] |
+	[VARIABLE] |
+	<Expression> ;
+
+
+
