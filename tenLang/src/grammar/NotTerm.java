@@ -1,7 +1,8 @@
 package grammar;
 
+import context.Context;
 import lexer.Lexem;
-import synnode.SynNode;
+import synanalizer.SynNode;
 
 import java.util.ArrayList;
 
@@ -14,21 +15,20 @@ public class NotTerm implements Symbol {
         this.name = name;
     }
 
-    public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children) {
-        SynNode synNode = new SynNode(this);
+    public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children, Context context) {
+        SynNode synNode = new SynNode(this, context, lexems.get(0).getPosition());
         for (Rule rule : termRules) {
-            if (rule.parse(lexems, synNode.getChildren())) {
+            if (rule.parse(lexems, synNode.getChildren(), context)) {
                 children.add(synNode);
                 return true;
             }
         }
         for (Rule rule : noTermRules) {
-            if (rule.parse(lexems, synNode.getChildren())) {
+            if (rule.parse(lexems, synNode.getChildren(), context)) {
                 children.add(synNode);
                 return true;
             }
         }
-
         return false;
     }
 
@@ -58,7 +58,7 @@ public class NotTerm implements Symbol {
     }
 
     @Override
-    public String getVaule() {
+    public String getValue() {
         return name;
     }
 

@@ -1,11 +1,17 @@
 <Text> ::=
-	<Declaration> "program:" <ExecCode> ;
+	<DeclarationBlock> "program:" <ExecCode> ;
 <ExecCode> ::=
-	<ExecCode> ";" <ExecCode> |
-	<ExecCode> "U" <ExecCode> |
-	<ExecCode> "*" |
+    <ConsecCode> |
+    <ParallelCode> |
+    <LoopCode> |
 	<Body> |
 	[EMPTY] ;
+<ConsecCode> ::=
+	<ExecCode> ";" <ExecCode> ;
+<ParallelCode> ::=
+	"(" <ExecCode> ")" "U" "(" <ExecCode> ")" ;
+<LoopCode> ::=
+	"(" <ExecCode> ")*" ;
 <Body> ::=
 	<Assignment> |
 	<Test> |
@@ -25,10 +31,12 @@
 	"input" [VARIABLE] |
 	"upd" [VARIABLE] "[" [CONSTANT] "]" |
 	"app" [VARIABLE] "[" [CONSTANT] "]" ;
+<DeclarationBlock> ::=
+    <DeclarationBlock> "," <DeclarationBlock> |
+    <Declaration> |
+    [EMPTY] ;
 <Declaration> ::=
-    <Declaration> "," <Declaration> |
-	"var" [VARIABLE] ":" <Type> |
-	[EMPTY] ;
+	"var" [VARIABLE] ":" <Type> ;
 <Type> ::=
 	"array" "of" <Type> |
 	"int" ;

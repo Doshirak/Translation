@@ -1,0 +1,4 @@
+var a : int ,
+var c : array of int ,
+var b : int
+program:

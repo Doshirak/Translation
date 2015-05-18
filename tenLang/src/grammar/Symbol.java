@@ -1,7 +1,7 @@
 package grammar;
 
 public interface Symbol {
-    String getVaule();
+    String getValue();
     boolean isTerm();
     boolean isNoTerm();
 }

@@ -1,0 +1,3 @@
+var a : int
+program:
+( ( a := 1 )* )*

@@ -1,11 +1,13 @@
 package lexer;
 
+import context.Context;
 import errorhandler.ErrorHandler;
 import reader.Buffer;
 import reader.Position;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public class Lexer {
     private Position position;
@@ -19,10 +21,21 @@ public class Lexer {
         this(new InputStreamReader(new ByteArrayInputStream(s.getBytes())), errorHandler, position);
     }
 
+    public Lexer(Context context) {
+        this.buffer = new Buffer(context);
+        this.position = context.getPosition();
+        this.errorHandler = context.getErrorHandler();
+        initTables();
+    }
+
     public Lexer (InputStreamReader reader, ErrorHandler errorHandler, Position position) {
         this.errorHandler = errorHandler;
         this.position = position;
         buffer = new Buffer(reader, errorHandler, position);
+        initTables();
+    }
+
+    private void initTables() {
         delimiters.add(' ');
         delimiters.add('\n');
         delimiters.add('\r');
@@ -38,11 +51,13 @@ public class Lexer {
         operators.add("+");
         operators.add("-");
         operators.add("*");
+        operators.add(")*");
         operators.add("/");
         operators.add("==");
         operators.add(":=");
         operators.add(":");
         operators.add(";");
+        operators.add("U");
         operators.add(",");
         operators.add("#");
         operators.add("?");
@@ -52,6 +67,12 @@ public class Lexer {
         operators.add(">=");
         operators.add("<=");
         operators.add(",");
+        operators.add("(");
+        operators.add(")");
+        operators.add("{");
+        operators.add("}");
+        operators.add("]");
+        operators.add("[");
     }
 
     public ArrayList<Lexem> read() {
@@ -83,39 +104,42 @@ public class Lexer {
     }
 
     private boolean isVariable(String string) {
-        return (!isOperator(string) && !(isConstant(string)));
+        return Pattern.matches("\\w+", string);
     }
 
     private boolean isConstant(String string) {
-        char chars[] = string.toCharArray();
-        if (chars[0] != '-' && !Character.isDigit(chars[0])) {
-            return false;
-        }
-        for (int i = 1;i < chars.length;++i) {
-            if (!Character.isDigit(chars[i])) {
-                return false;
-            }
-        }
-        return true;
+        return Pattern.matches("\\d+", string);
     }
 
-    public Lexem getToken() {
-        Position tokenPosition = new Position(position.getRow(), position.getCol() - 1);
-        StringBuilder builder = new StringBuilder();
-        while (!buffer.empty() && !delimiters.contains((char) buffer.read())) {
-            builder.append((char)buffer.read());
-            buffer.next();
-            if ((char) buffer.read() == '/' && (char) buffer.readPrev() == '/') {
-                while (!buffer.empty() && (char) buffer.read() != '\n') {
-                    buffer.next();
-                }
-                buffer.next();
-                return null;
-            }
-        }
+    private void trim() {
         while (!buffer.empty() && delimiters.contains((char) buffer.read())) {
             buffer.next();
         }
+    }
+
+    private boolean isComment() {
+        if ((char) buffer.read() == '/' && (char) buffer.readPrev() == '/') {
+            while (!buffer.empty() && (char) buffer.read() != '\n') {
+                buffer.next();
+            }
+            buffer.next();
+            return true;
+        }
+        return false;
+    }
+
+    public Lexem getToken() {
+        Position tokenPosition = new Position(position);
+        StringBuilder builder = new StringBuilder();
+        trim();
+        while (!buffer.empty() && !delimiters.contains((char) buffer.read())) {
+            builder.append((char) buffer.read());
+            buffer.next();
+            if (isComment()) {
+                return null;
+            }
+        }
+        trim();
         String value = builder.toString();
         LexemType type = null;
         if (isOperator(value)) {
@@ -124,18 +148,9 @@ public class Lexer {
             type = LexemType.constant;
         } else if (isVariable(value)) {
             type = LexemType.variable;
+        } else {
+            errorHandler.addError("wrong variable name", position);
         }
         return new Lexem(type, value, tokenPosition);
     }
-
-    public char getChar() {
-        char result = (char) buffer.read();
-        buffer.next();
-        return result;
-    }
-
-    public char lookAhead() {
-        return (char) buffer.read();
-    }
-
 }

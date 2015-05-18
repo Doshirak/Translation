@@ -1,8 +1,9 @@
 package grammar;
 
+import context.Context;
 import lexer.Lexem;
 import lexer.LexemType;
-import synnode.SynNode;
+import synanalizer.SynNode;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -27,12 +28,23 @@ public class Term implements Symbol {
         }
     }
 
-    public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children, ArrayList<Integer> delimiters) {
+    public Term(Term term) {
+        this.value = term.getValue();
+        this.isEmpty = term.empty();
+        this.isVar = term.variable();
+        this.isConst = term.constant();
+    }
+
+    public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children, ArrayList<Integer> delimiters, Context context) {
         boolean acceptTerm = false;
         for (int i = 0; i < lexems.size(); ++i) {
-            if (check(lexems.get(i))) {
+            if (check(lexems.get(i)) && !delimiters.contains(i)) {
                 acceptTerm = true;
                 delimiters.add(i);
+                value = lexems.get(i).getValue();
+                Term term = new Term(this);
+                SynNode synNode = new SynNode(term, context, lexems.get(0).getPosition());
+                children.add(synNode);
                 break;
             }
         }
@@ -52,8 +64,20 @@ public class Term implements Symbol {
         return false;
     }
 
+    public boolean constant() {
+        return isConst;
+    }
+
+    public boolean variable() {
+        return isVar;
+    }
+
+    public boolean empty() {
+        return isEmpty;
+    }
+
     @Override
-    public String getVaule() {
+    public String getValue() {
         return value;
     }
 
@@ -69,6 +93,9 @@ public class Term implements Symbol {
 
     @Override
     public String toString() {
+        if (isEmpty) {
+            return "EMPTY";
+        }
         return value;
     }
 }

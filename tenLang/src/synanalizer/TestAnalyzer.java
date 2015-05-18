@@ -1,5 +1,7 @@
 package synanalizer;
 
+import context.Context;
+import variables.Variable;
 import errorhandler.ErrorHandler;
 import grammar.Grammar;
 import reader.Position;
@@ -10,11 +12,10 @@ import java.io.FileNotFoundException;
 public class TestAnalyzer {
 
     public static void main(String args[]) throws FileNotFoundException {
-        ErrorHandler errorHandler = new ErrorHandler();
-        Position position = new Position();
         Grammar grammar = new Grammar();
-        grammar.read(new File("grammar"));
-        SynAnalyzer analyzer = new SynAnalyzer("var a : int program: a := 2 ; print a", errorHandler, position, grammar);
+        grammar.read(new File("testGrammar"));
+        Context context = new Context(new File("testProg"));
+        SynAnalyzer analyzer = new SynAnalyzer(context, grammar);
         analyzer.read();
         analyzer.write();
     }

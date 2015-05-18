@@ -1,7 +1,8 @@
 package grammar;
 
+import context.Context;
 import lexer.Lexem;
-import synnode.SynNode;
+import synanalizer.SynNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,31 +33,35 @@ public class Rule {
         return hasTerm;
     }
 
-    public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children) {
+    public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children, Context context) {
         ArrayList<Integer> delimiters = new ArrayList<Integer>();
+        // find terminals positions
         delimiters.add(-1);
         for (Term term : terms.values()) {
-            if (!term.parse(lexems, children, delimiters)) {
+            if (!term.parse(lexems, children, delimiters, context)) {
                 return false;
             }
         }
         delimiters.add(lexems.size());
         ArrayList<ArrayList<Lexem>> lArrays = new ArrayList<ArrayList<Lexem>>();
+        // split lexems for notterminals with terminals positions
         for (int i = 1;i < delimiters.size();++i) {
             if (delimiters.get(i) - delimiters.get(i - 1) > 1) {
                 lArrays.add(new ArrayList<Lexem>(lexems.subList(delimiters.get(i - 1) + 1, delimiters.get(i))));
             }
         }
+        // more than one notterminals
         if (lArrays.size() > 1) {
             ArrayList<NotTerm> nArray = new ArrayList<NotTerm>(notTerms.values());
             for (int i = 0; i < nArray.size(); ++i) {
-                if (!nArray.get(i).parse(lArrays.get(i), children)) {
+                if (!nArray.get(i).parse(lArrays.get(i), children, context)) {
                     return false;
                 }
             }
+        // one notterminal
         } else {
             for (NotTerm notTerm : notTerms.values()) {
-                if (!notTerm.parse(lexems, children)) {
+                if (!notTerm.parse(lArrays.get(0), children, context)) {
                     return false;
                 }
             }

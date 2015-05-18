@@ -1,11 +1,17 @@
 <Text> ::=
-	<Declaration> "program:" <ExecCode> ;
+	<DeclarationBlock> "program:" <ExecCode> ;
 <ExecCode> ::=
-	<ExecCode> ";" <ExecCode> |
-	<ExecCode> "U" <ExecCode> |
-	<ExecCode> "*" |
+    <ConsecCode> |
+    <ParallelCode> |
+    <LoopCode> |
 	<Body> |
 	[EMPTY] ;
+<ConsecCode> ::=
+	<ExecCode> ";" <ExecCode> ;
+<ParallelCode> ::=
+	"(" <ExecCode> ")" "U" "(" <ExecCode> ")" ;
+<LoopCode> ::=
+	"(" <ExecCode> ")*" ;
 <Body> ::=
 	<Assignment> |
 	<Test> |
@@ -25,26 +31,40 @@
 	"input" [VARIABLE] |
 	"upd" [VARIABLE] "[" [CONSTANT] "]" |
 	"app" [VARIABLE] "[" [CONSTANT] "]" ;
+<DeclarationBlock> ::=
+    <DeclarationBlock> "," <DeclarationBlock> |
+    <Declaration> |
+    [EMPTY] ;
 <Declaration> ::=
-    <Declaration> "," <Declaration> |
-	"var" [VARIABLE] ":" <Type> |
-	[EMPTY] ;
+	"var" [VARIABLE] ":" <Type> ;
 <Type> ::=
 	"array" "of" <Type> |
 	"int" ;
 <Expression> ::=
-	<Term> "+" <Term> |
-	<Term> "-" <Term> |
+    <Sum> |
+    <Sub> |
 	<Term> ;
-<Term> ::= 
-	<Factor> "*" <Factor> |
-	<Factor> "/" <Factor> |
+<Sum> ::=
+	<Term> "+" <Term> ;
+<Sub> ::=
+	<Term> "-" <Term> ;
+<Term> ::=
+    <Mul> |
+    <Div> |
 	<Factor> ;
+<Mul> ::=
+	<Factor> "*" <Factor> ;
+<Div> ::=
+	<Factor> "/" <Factor> ;
 <Factor> ::=
-	<Power> "^" <Factor> |
+    <FactorPow> |
 	<Power> ;
+<FactorPow> ::=
+	<Power> "^" <Factor> ;
 <Power> ::=
-	<Atom> |
+    <Negative> |
+	<Atom> ;
+<Negative> ::=
 	"-" <Atom> ;
 <Atom> ::=
 	[CONSTANT] |

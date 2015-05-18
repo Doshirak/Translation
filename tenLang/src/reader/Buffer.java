@@ -1,5 +1,6 @@
 package reader;
 
+import context.Context;
 import errorhandler.ErrorHandler;
 
 import java.io.InputStreamReader;
@@ -16,8 +17,12 @@ public class Buffer {
         this.reader = new Reader(reader, errorHandler, position);
         next();
     }
+    public Buffer(Context context) {
+        reader = new Reader(context);
+        next();
+    }
     public int readPrev() {
-        return  prev;
+        return prev;
     }
     public int read () {
         return current;

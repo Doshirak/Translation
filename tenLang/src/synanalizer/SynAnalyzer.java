@@ -1,60 +1,52 @@
 package synanalizer;
 
+import context.Context;
 import errorhandler.ErrorHandler;
 import grammar.Grammar;
 import lexer.Lexem;
 import lexer.Lexer;
 import reader.Position;
-import synnode.SynNode;
 
-import java.io.*;
 import java.util.ArrayList;
 
 public class SynAnalyzer {
-    private final Grammar grammar;
+    private Grammar grammar;
     private ErrorHandler errorHandler;
     private Position position;
     private ArrayList<Lexem> lexems;
     private Lexer lexer;
     private SynNode head;
+    private Context context;
 
-    public SynAnalyzer(String s, ErrorHandler errorHandler, Position position, Grammar grammar) {
-        this(new InputStreamReader(new ByteArrayInputStream(s.getBytes())), errorHandler, position, grammar);
-    }
-
-    public SynAnalyzer(InputStreamReader reader, ErrorHandler errorHandler, Position position, Grammar grammar) {
-        this.errorHandler = errorHandler;
-        this.position = position;
+    public SynAnalyzer(Context context, Grammar grammar) {
+        this.context = context;
+        this.errorHandler = context.getErrorHandler();
+        this.position = context.getPosition();
         this.grammar = grammar;
-        lexer = new Lexer(reader, errorHandler, position);
+        lexer = new Lexer(context);
     }
 
     public void read() {
         lexems = lexer.read();
-        head = new SynNode(grammar.getFirstNotTerm(), errorHandler);
+        head = new SynNode(grammar.getFirstNotTerm(), context, new Position(0, 0));
         head.read(lexems);
-    }
-
-    public void write(String filename) throws IOException {
-//        OutputStream outputStream = new FileOutputStream(filename);
-//        OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-//        for (lexer.Lexem lexem : lexems) {
-//            writer.write(lexem.toString() + "\n");
-//        }
-//        writer.close();
     }
 
     public void write() {
         writeNode(head, 0);
     }
 
-    public void writeNode(SynNode node, int level) {
+    private void writeNode(SynNode node, int level) {
         for (int i = 0;i < level;++i) {
             System.out.print("-");
         }
-        System.out.println(node.getNotTerm().getName());
+        System.out.println(node.getValue());
         for (SynNode child : node.getChildren()) {
             writeNode(child, level + 1);
         }
+    }
+
+    public SynNode getHead() {
+        return head;
     }
 }

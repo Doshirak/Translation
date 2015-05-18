@@ -1,0 +1,5 @@
+var a : int ,
+var c : array of int ,
+var b : int
+program:
+a := 2 + 2 - 3
