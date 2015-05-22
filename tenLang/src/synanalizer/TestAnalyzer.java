@@ -13,8 +13,8 @@ public class TestAnalyzer {
 
     public static void main(String args[]) throws FileNotFoundException {
         Grammar grammar = new Grammar();
-        grammar.read(new File("testGrammar"));
-        Context context = new Context(new File("testProg"));
+        grammar.read(new File("grammar4"));
+        Context context = new Context(new File("loopProg"));
         SynAnalyzer analyzer = new SynAnalyzer(context, grammar);
         analyzer.read();
         analyzer.write();

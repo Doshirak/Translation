@@ -9,12 +9,14 @@ import variables.Int;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Stack;
 
 public class Translator {
     private Context context;
     private Grammar grammar;
     private Parser parser;
     private ArrayList<Code> program = new ArrayList<Code>();
+    private Stack<Integer> loopStack = new Stack<Integer>();
 
     public Translator(Context context, Grammar grammar) {
         this.context = context;
@@ -29,22 +31,21 @@ public class Translator {
     }
 
     private int translateOperations(OperationNode operation, Code parent, Integer index) {
+        Code code = new Code(++index, operation);
         if (operation.getType() == OperationType.loop) {
-
-        } else if (operation.getType() == OperationType.endLoop) {
-
-        } else {
-            Code code = new Code(++index, operation);
-            if (parent != null) {
-                parent.addNext(index);
-            }
-            program.add(code);
-            for (OperationNode child : operation.getChildren()) {
-                index = translateOperations(child, code, index);
-            }
-            return index;
+            loopStack.push(index);
         }
-        return 0;
+        if (operation.getType() == OperationType.endLoop) {
+            code.getNext().add(loopStack.pop());
+        }
+        if (parent != null) {
+            parent.addNext(index);
+        }
+        program.add(code);
+        for (OperationNode child : operation.getChildren()) {
+            index = translateOperations(child, code, index);
+        }
+        return index;
     }
 
     public void write() {

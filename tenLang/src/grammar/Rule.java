@@ -4,14 +4,18 @@ import context.Context;
 import lexer.Lexem;
 import synanalizer.SynNode;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Rule {
     private boolean hasTerm = false;
+    private boolean hasBraces = false;
     private ArrayList<Symbol> symbols = new ArrayList<Symbol>();
     private Map<Integer, Term> terms = new HashMap<Integer, Term>();
+    private ArrayList<Term> termsList = new ArrayList<Term>();
     private HashMap<Integer, NotTerm> notTerms = new HashMap<Integer, NotTerm>();
     private int count = 0;
 
@@ -19,6 +23,7 @@ public class Rule {
         Term term = new Term(value, special);
         symbols.add(term);
         terms.put(count, term);
+        termsList.add(term);
         count++;
         hasTerm = true;
     }
@@ -37,9 +42,20 @@ public class Rule {
         ArrayList<Integer> delimiters = new ArrayList<Integer>();
         // find terminals positions
         delimiters.add(-1);
-        for (Term term : terms.values()) {
-            if (!term.parse(lexems, children, delimiters, context)) {
+        if (hasBraces) {
+            Term first = termsList.get(0);
+            Term second = termsList.get(1);
+            if (!first.parse(lexems, children, delimiters, context)) {
                 return false;
+            }
+            if (!second.parseReverse(lexems, children, delimiters, context)) {
+                return false;
+            }
+        } else {
+            for (Term term : terms.values()) {
+                if (!term.parse(lexems, children, delimiters, context)) {
+                    return false;
+                }
             }
         }
         delimiters.add(lexems.size());
@@ -69,10 +85,6 @@ public class Rule {
         return true;
     }
 
-    public ArrayList<Symbol> getSymbols() {
-        return symbols;
-    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -80,5 +92,9 @@ public class Rule {
             builder.append(symbol).append(" ");
         }
         return builder.toString();
+    }
+
+    public void setHasBraces(boolean hasBraces) {
+        this.hasBraces = hasBraces;
     }
 }

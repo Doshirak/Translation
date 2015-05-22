@@ -10,8 +10,8 @@ import java.io.FileNotFoundException;
 public class TestTranslator {
     public static void main(String args[]) throws FileNotFoundException {
         Grammar grammar = new Grammar();
-        grammar.read(new File("grammar3"));
-        Context context = new Context(new File("assignProg"));
+        grammar.read(new File("grammar4"));
+        Context context = new Context(new File("loopProg"));
         Translator translator = new Translator(context, grammar);
         translator.translate();
         translator.write();

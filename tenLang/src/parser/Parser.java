@@ -108,13 +108,16 @@ public class Parser {
             SynNode firstSyn = synNode.getChildren().get(1);
             SynNode secondSyn = synNode.getChildren().get(2);
             OperationNode first = parseOperations(firstSyn, operation);
-            parseOperations(secondSyn, first);
-            return first;
+            return parseOperations(secondSyn, first);
         } else if (synNode.getValue().equals("<ParallelCode>")) {
-            SynNode firstSyn = synNode.getChildren().get(5);
-            SynNode secondSyn = synNode.getChildren().get(6);
-            parseOperations(firstSyn, operation);
-            parseOperations(secondSyn, operation);
+            SynNode firstSyn = synNode.getChildren().get(1).getChildren().get(2);
+            SynNode secondSyn = synNode.getChildren().get(2).getChildren().get(2);
+            OperationNode first = parseOperations(firstSyn, operation);
+            OperationNode second = parseOperations(secondSyn, operation);
+            OperationNode pass = new OperationNode(OperationType.pass);
+            first.addChild(pass);
+            second.addChild(pass);
+            return pass;
         } else if (synNode.getValue().equals("<LoopCode>")) {
             OperationNode childOp = new OperationNode(synNode, OperationType.loop);
             operation.addChild(childOp);
@@ -122,6 +125,7 @@ public class Parser {
             OperationNode leave = parseOperations(firstSyn, childOp);
             OperationNode endLoop = new OperationNode(OperationType.endLoop);
             leave.addChild(endLoop);
+            return endLoop;
         } else if (synNode.getValue().equals("<Body>")) {
             return parseBody(synNode.getChildren().get(0), operation);
         }

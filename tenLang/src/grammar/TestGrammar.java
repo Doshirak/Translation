@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 public class TestGrammar {
     public static void main(String args[]) throws FileNotFoundException {
         Grammar grammar = new Grammar();
-        grammar.read(new File("grammar"));
+        grammar.read(new File("testGrammar"));
+        grammar.write();
     }
 }

@@ -59,6 +59,9 @@ public class Grammar {
                     currentRule.add(ruleNoTerm);
                 } else if (Pattern.matches("\\[\\w+\\]", current)) {
                     currentRule.add(trim(current), true);
+                } else if (Pattern.matches("\\{.+\\}", current)) {
+                    currentRule.setHasBraces(true);
+                    currentRule.add(trim(current), false);
                 } else {
                     currentRule.add(trim(current), false);
                 }
