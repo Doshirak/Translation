@@ -2,36 +2,27 @@ package grammar;
 
 import context.Context;
 import lexer.Lexem;
+import lexer.LexemType;
 import synanalizer.SynNode;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Rule {
     private boolean hasTerm = false;
-    private boolean hasBraces = false;
     private ArrayList<Symbol> symbols = new ArrayList<Symbol>();
-    private Map<Integer, Term> terms = new HashMap<Integer, Term>();
     private ArrayList<Term> termsList = new ArrayList<Term>();
-    private HashMap<Integer, NotTerm> notTerms = new HashMap<Integer, NotTerm>();
-    private int count = 0;
+    private ArrayList<NotTerm> notTermsList = new ArrayList<NotTerm>();
 
     public void add(String value, boolean special) {
         Term term = new Term(value, special);
         symbols.add(term);
-        terms.put(count, term);
         termsList.add(term);
-        count++;
         hasTerm = true;
     }
 
     public void add(NotTerm notTerm) {
         symbols.add(notTerm);
-        notTerms.put(count, notTerm);
-        count++;
+        notTermsList.add(notTerm);
     }
 
     public boolean withTerm() {
@@ -39,50 +30,121 @@ public class Rule {
     }
 
     public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children, Context context) {
-        ArrayList<Integer> delimiters = new ArrayList<Integer>();
-        // find terminals positions
-        delimiters.add(-1);
-        if (hasBraces) {
-            Term first = termsList.get(0);
-            Term second = termsList.get(1);
-            if (!first.parse(lexems, children, delimiters, context)) {
+        if (notTermsList.size() == 0) {
+            if (lexems.size() != 1 || termsList.size() != 1) {
                 return false;
             }
-            if (!second.parseReverse(lexems, children, delimiters, context)) {
+            if (termsList.get(0).check(lexems.get(0))) {
+                Term term = new Term(termsList.get(0));
+                term.setValue(lexems.get(0).getValue());
+                SynNode synNode = new SynNode(term, context, lexems.get(0).getPosition());
+                children.add(synNode);
+                return true;
+            }
+            return false;
+        }
+        if (termsList.size() > 0) {
+            SynNode firstTermNode = null;
+            SynNode secondTermNode = null;
+            ArrayList<Integer> delimiters = new ArrayList<Integer>();
+            delimiters.add(-1);
+            Term firstTerm = termsList.get(0);
+            for (int i = 0;i < lexems.size();++i) {
+                Lexem lexem = lexems.get(i);
+                if (firstTerm.check(lexem)) {
+                    Lexem openBrace = new Lexem(LexemType.operator, "(", null);
+                    if (lexems.contains(openBrace) &&
+                            (firstTerm.getValue().equals(";") || firstTerm.getValue().equals("U"))) {
+                        boolean wrongDelimeter = false;
+                        int openCount = 0;
+                        int closeCount = 0;
+                        for (int j = 0;j < i;++j) {
+                            if (lexems.get(j).equals(openBrace)) {
+                                openCount++;
+                            }
+                            if (lexems.get(j).getValue().equals(")") ||
+                                    lexems.get(j).getValue().equals(")*") ||
+                                    lexems.get(j).getValue().equals(")?")) {
+                                closeCount++;
+                            }
+                        }
+                        if (openCount != closeCount) {
+                            wrongDelimeter = true;
+                        }
+                        openCount = 0;
+                        closeCount = 0;
+                        for (int j = i + 1;j < lexems.size();++j) {
+                            if (lexems.get(j).equals(openBrace)) {
+                                openCount++;
+                            }
+                            if (lexems.get(j).getValue().equals(")") ||
+                                    lexems.get(j).getValue().equals(")*") ||
+                                    lexems.get(j).getValue().equals(")?")) {
+                                closeCount++;
+                            }
+                        }
+                        if (openCount != closeCount) {
+                            wrongDelimeter = true;
+                        }
+                        if (wrongDelimeter) {
+                            continue;
+                        }
+                    }
+                    delimiters.add(i);
+                    firstTermNode = new SynNode(firstTerm, context, lexem.getPosition());
+                    break;
+                }
+            }
+            if (firstTermNode == null) {
                 return false;
             }
+            if (termsList.size() > 1) {
+                Term secondTerm = termsList.get(1);
+                for (int i = lexems.size() - 1;i >= delimiters.get(1);--i) {
+                    Lexem lexem = lexems.get(i);
+                    if (secondTerm.check(lexem)) {
+                        delimiters.add(i);
+                        secondTermNode = new SynNode(secondTerm, context, lexem.getPosition());
+                        break;
+                    }
+                }
+                if (secondTermNode == null) {
+                    return false;
+                }
+            }
+            children.add(firstTermNode);
+            if (secondTermNode != null) {
+                children.add(secondTermNode);
+            }
+            delimiters.add(lexems.size());
+            ArrayList<ArrayList<Lexem>> lexemArrays = new ArrayList<ArrayList<Lexem>>();
+            for (int i = 1;i < delimiters.size();++i) {
+                int prev = delimiters.get(i- 1);
+                int current = delimiters.get(i);
+                if (current - prev > 1) {
+                    ArrayList<Lexem> subList = new ArrayList<Lexem>(lexems.subList(prev + 1, current));
+                    lexemArrays.add(subList);
+                }
+            }
+            if (lexemArrays.size() != notTermsList.size()) {
+                return false;
+            }
+            for (int i = 0; i < lexemArrays.size();++i) {
+                ArrayList<Lexem> lexemArray = lexemArrays.get(i);
+                NotTerm notTerm = notTermsList.get(i);
+                if (!notTerm.parse(lexemArray, children, context)) {
+                    return false;
+                }
+            }
+            return true;
         } else {
-            for (Term term : terms.values()) {
-                if (!term.parse(lexems, children, delimiters, context)) {
+            for (NotTerm notTerm : notTermsList) {
+                if (!notTerm.parse(lexems, children, context)) {
                     return false;
                 }
             }
+            return true;
         }
-        delimiters.add(lexems.size());
-        ArrayList<ArrayList<Lexem>> lArrays = new ArrayList<ArrayList<Lexem>>();
-        // split lexems for notterminals with terminals positions
-        for (int i = 1;i < delimiters.size();++i) {
-            if (delimiters.get(i) - delimiters.get(i - 1) > 1) {
-                lArrays.add(new ArrayList<Lexem>(lexems.subList(delimiters.get(i - 1) + 1, delimiters.get(i))));
-            }
-        }
-        // more than one notterminals
-        if (lArrays.size() > 1) {
-            ArrayList<NotTerm> nArray = new ArrayList<NotTerm>(notTerms.values());
-            for (int i = 0; i < nArray.size(); ++i) {
-                if (!nArray.get(i).parse(lArrays.get(i), children, context)) {
-                    return false;
-                }
-            }
-        // one notterminal
-        } else {
-            for (NotTerm notTerm : notTerms.values()) {
-                if (!notTerm.parse(lArrays.get(0), children, context)) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     @Override
@@ -92,9 +154,5 @@ public class Rule {
             builder.append(symbol).append(" ");
         }
         return builder.toString();
-    }
-
-    public void setHasBraces(boolean hasBraces) {
-        this.hasBraces = hasBraces;
     }
 }

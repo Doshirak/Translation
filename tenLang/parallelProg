@@ -2,5 +2,4 @@ var a : int ,
 var c : int ,
 var b : int
 program:
-a := 2 ;
-( b := a + 2 ) U ( b := a + 3 )
+( a := 1 ) U ( ( b := 2 ) U ( c := 3 ) )

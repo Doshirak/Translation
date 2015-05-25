@@ -5,10 +5,8 @@ import parser.OperationNode;
 import grammar.Grammar;
 import parser.OperationType;
 import parser.Parser;
-import variables.Int;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Stack;
 
 public class Translator {

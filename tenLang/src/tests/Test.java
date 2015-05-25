@@ -1,7 +1,6 @@
 package tests;
 
 import context.Context;
-import variables.Variable;
 import grammar.Grammar;
 import junit.framework.TestCase;
 import lexer.Lexem;

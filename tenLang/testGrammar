@@ -1,16 +1,14 @@
-<LoopCode> ::=
-	{(} <ExecCode> {)*} ;
-<Braces> ::=
-    {(} <ExecCode> {)} ;
 <ExecCode> ::=
     <LoopCode> |
-    <ParallelCode> |
+    <Test> |
+	<Body> |
+	[EMPTY] ;
+<LoopCode> ::=
+	"(" <ExecCode> ")*" ;
+<Test> ::=
+    "(" <ExecCode> ")?"  ;
+<Body> ::=
 	<Atom> ;
-<ParallelCode> ::=
-    <Braces> "U" <Braces> ;
 <Atom> ::=
-	[CONSTANT] |
-	[VARIABLE] ;
-
-
-
+    [CONSTANT] |
+    [VARIABLE] ;

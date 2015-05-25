@@ -53,9 +53,6 @@ public class SynNode {
         }
     }
 
-    public void addChild(SynNode node) {
-        children.add(node);
-    }
 
     public ArrayList<SynNode> getChildren() {
         return children;

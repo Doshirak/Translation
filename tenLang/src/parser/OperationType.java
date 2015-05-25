@@ -3,7 +3,11 @@ package parser;
 public enum OperationType {
     pass,
     assign,
-    test,
+    testEqual,
+    testBigger,
+    testLess,
+    testEqualBigger,
+    testEqualLess,
     operator,
     loop,
     endLoop,

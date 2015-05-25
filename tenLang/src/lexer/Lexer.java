@@ -44,6 +44,7 @@ public class Lexer {
         operators.add("int");
         operators.add("array");
         operators.add("of");
+        operators.add("arrayOf");
         operators.add("upd");
         operators.add("app");
         operators.add("print");
@@ -53,6 +54,7 @@ public class Lexer {
         operators.add("*");
         operators.add("**");
         operators.add(")*");
+        operators.add(")?");
         operators.add("/");
         operators.add("==");
         operators.add(":=");

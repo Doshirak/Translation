@@ -9,8 +9,8 @@ import java.io.FileNotFoundException;
 public class TestVM {
     public static void main (String args[]) throws FileNotFoundException {
         Grammar grammar = new Grammar();
-        grammar.read(new File("grammar4"));
-        Context context = new Context(new File("assignProg"));
+        grammar.read(new File("grammar5"));
+        Context context = new Context(new File("loopProg"));
         VirtualMachine vm = new VirtualMachine(context, grammar);
         vm.run();
     }

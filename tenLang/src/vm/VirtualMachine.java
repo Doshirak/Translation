@@ -2,9 +2,7 @@ package vm;
 
 import context.Context;
 import grammar.Grammar;
-import translator.Code;
 import translator.Translator;
-import variables.Int;
 
 import java.util.ArrayList;
 import java.util.Map;

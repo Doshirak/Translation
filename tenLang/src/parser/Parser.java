@@ -1,6 +1,5 @@
 package parser;
 
-import com.sun.corba.se.spi.orb.Operation;
 import context.Context;
 import grammar.Grammar;
 import synanalizer.SynAnalyzer;
@@ -88,7 +87,7 @@ public class Parser {
     private void parseVariable(SynNode node) {
         SynNode first = node.getChildren().get(0);
         if (first.getValue().equals("var")) {
-            String varName = node.getChildren().get(1).getValue();
+            String varName = node.getChildren().get(2).getChildren().get(0).getValue();
             SynNode type = node.getChildren().get(3);
             VarType varType = null;
             if (type.getChildren().get(0).getValue().equals("int")) {
@@ -135,16 +134,40 @@ public class Parser {
     private OperationNode parseBody(SynNode node, OperationNode operation) {
         if (node.getValue().equals("<Assignment>")) {
             OperationNode childOp = new OperationNode(node, OperationType.assign);
-            SynNode varSyn = node.getChildren().get(0);
+            SynNode varSyn = node.getChildren().get(1).getChildren().get(0);
             SynNode exprNode = node.getChildren().get(2);
             childOp.addOperand(varSyn.getValue());
             OperationNode nextChildOp = parseExpr(exprNode, operation);
+            freeReg();
             childOp.addOperand(nextChildOp.getOperands().get(0));
             nextChildOp.addChild(childOp);
             return childOp;
         } else if (node.getValue().equals("<Test>")) {
-            OperationNode childOp = new OperationNode(node, OperationType.test);
-            operation.addChild(childOp);
+            SynNode condition = node.getChildren().get(2);
+            SynNode type = condition.getChildren().get(0);
+            OperationNode childOp = null;
+            if (type.getValue().equals(">")) {
+                childOp = new OperationNode(OperationType.testBigger);
+            } else if (type.getValue().equals("<")) {
+                childOp = new OperationNode(OperationType.testLess);
+            } else if (type.getValue().equals("=")) {
+                childOp = new OperationNode(OperationType.testEqual);
+            } else if (type.getValue().equals(">=")) {
+                childOp = new OperationNode(OperationType.testEqualBigger);
+            } else if (type.getValue().equals("<=")) {
+                childOp = new OperationNode(OperationType.testEqualLess);
+            }
+            SynNode firstExpr = condition.getChildren().get(1);
+            SynNode secondExpr = condition.getChildren().get(2);
+            OperationNode firstOper = parseExpr(firstExpr, operation);
+            OperationNode secondOper = parseExpr(secondExpr, firstOper);
+            secondOper.addChild(childOp);
+            childOp.addOperand(getRegister());
+            childOp.addOperand(firstOper.getOperands().get(0));
+            childOp.addOperand(secondOper.getOperands().get(0));
+            freeReg();
+            freeReg();
+            freeReg();
             return childOp;
         } else if (node.getValue().equals("<Operator>")) {
             OperationNode childOp = new OperationNode(node, OperationType.operator);
@@ -222,10 +245,6 @@ public class Parser {
 
     public OperationNode getOperations() {
         return operations;
-    }
-
-    public Map<String, Variable> getVariables() {
-        return varNames;
     }
 
     public ArrayList<String> getIntegers() {

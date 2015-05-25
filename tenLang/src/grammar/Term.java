@@ -1,11 +1,7 @@
 package grammar;
 
-import context.Context;
 import lexer.Lexem;
 import lexer.LexemType;
-import synanalizer.SynNode;
-
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class Term implements Symbol {
@@ -13,7 +9,6 @@ public class Term implements Symbol {
     private boolean isConst = false;
     private boolean isVar = false;
     private boolean isEmpty = false;
-    private boolean isBrace = false;
 
     public Term(String value, boolean special) {
         if (!special) {
@@ -25,8 +20,6 @@ public class Term implements Symbol {
                 isConst = true;
             } else if (value.equals("EMPTY")) {
                 isEmpty = true;
-            } else {
-                isBrace = true;
             }
         }
     }
@@ -36,39 +29,6 @@ public class Term implements Symbol {
         this.isEmpty = term.empty();
         this.isVar = term.variable();
         this.isConst = term.constant();
-        this.isBrace = term.brace();
-    }
-
-    public boolean parse(ArrayList<Lexem> lexems, ArrayList<SynNode> children, ArrayList<Integer> delimiters, Context context) {
-        boolean acceptTerm = false;
-        for (int i = 0; i < lexems.size(); ++i) {
-            if (check(lexems.get(i)) && !delimiters.contains(i)) {
-                acceptTerm = true;
-                delimiters.add(i);
-                value = lexems.get(i).getValue();
-                Term term = new Term(this);
-                SynNode synNode = new SynNode(term, context, lexems.get(0).getPosition());
-                children.add(synNode);
-                break;
-            }
-        }
-        return acceptTerm;
-    }
-
-    public boolean parseReverse(ArrayList<Lexem> lexems, ArrayList<SynNode> children, ArrayList<Integer> delimiters, Context context) {
-        boolean acceptTerm = false;
-        for (int i = lexems.size() - 1; i >= 0; --i) {
-            if (check(lexems.get(i)) && !delimiters.contains(i)) {
-                acceptTerm = true;
-                delimiters.add(i);
-                value = lexems.get(i).getValue();
-                Term term = new Term(this);
-                SynNode synNode = new SynNode(term, context, lexems.get(0).getPosition());
-                children.add(synNode);
-                break;
-            }
-        }
-        return acceptTerm;
     }
 
     public boolean check(Lexem lexem) {
@@ -96,10 +56,6 @@ public class Term implements Symbol {
         return isEmpty;
     }
 
-    private boolean brace() {
-        return isBrace;
-    }
-
     @Override
     public String getValue() {
         return value;
@@ -119,8 +75,16 @@ public class Term implements Symbol {
     public String toString() {
         if (isEmpty) {
             return "EMPTY";
+        } else if (isVar) {
+            return "VARIABLE";
+        } else if (isConst) {
+            return "CONSTANT";
         }
         return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }
 

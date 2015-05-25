@@ -36,9 +36,16 @@ public class VMContext {
         nextCode = true;
     }
 
+    //
     public void run() {
         OperationNode operation = code.getOperation();
-        operation.exec(variables);
+        int result = operation.exec(variables);
+        if (operation.isTest()) {
+            if (result == 0) {
+                nextCode = false;
+                return;
+            }
+        }
         if (code.getNext().size() > 0) {
             for (int i = 1;i < code.getNext().size();++i) {
                 VMContext context = new VMContext(this, code.getNext().get(i));

@@ -1,8 +1,6 @@
 package parser;
 
-import com.sun.corba.se.spi.orb.Operation;
 import synanalizer.SynNode;
-import variables.Int;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -38,6 +36,14 @@ public class OperationNode {
         operands.add(new Operand(value));
     }
 
+    public boolean isTest() {
+        return (type == OperationType.testEqual ||
+                type == OperationType.testLess ||
+                type == OperationType.testBigger ||
+                type == OperationType.testEqualLess ||
+                type == OperationType.testEqualBigger);
+    }
+
     public ArrayList<OperationNode> getChildren() {
         return children;
     }
@@ -58,32 +64,62 @@ public class OperationNode {
         }
     }
 
-    public void exec(Map<String, Integer> variables) {
+    public int exec(Map<String, Integer> variables) {
         if (type == OperationType.pass) {
-            return;
+            return 0;
         }
-        String resultName = operands.get(0).getName();
-        int result = 0;
-        if (type == OperationType.assign) {
-            Operand second = operands.get(1);
-            result = getValue(second, variables);
-        } else if (type == OperationType.sum) {
-            Operand second = operands.get(1);
-            Operand third = operands.get(2);
-            result = getValue(second, variables) + getValue(third, variables);
-        } else if (type == OperationType.sub) {
-            Operand second = operands.get(1);
-            Operand third = operands.get(2);
-            result = getValue(second, variables) - getValue(third, variables);
-        } else if (type == OperationType.mul) {
-            Operand second = operands.get(1);
-            Operand third = operands.get(2);
-            result = getValue(second, variables) * getValue(third, variables);
-        } else if (type == OperationType.div) {
-            Operand second = operands.get(1);
-            Operand third = operands.get(2);
-            result = getValue(second, variables) / getValue(third, variables);
+        if (operands.size() > 0) {
+            String resultName = operands.get(0).getName();
+            int result = 0;
+            if (type == OperationType.assign) {
+                Operand second = operands.get(1);
+                result = getValue(second, variables);
+            } else if (type == OperationType.sum) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = getValue(second, variables) + getValue(third, variables);
+            } else if (type == OperationType.sub) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = getValue(second, variables) - getValue(third, variables);
+            } else if (type == OperationType.mul) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = getValue(second, variables) * getValue(third, variables);
+            } else if (type == OperationType.div) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = getValue(second, variables) / getValue(third, variables);
+            } else if (type == OperationType.testEqual) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = (getValue(second, variables) == getValue(third, variables)) ? 1 : 0;
+            } else if (type == OperationType.testBigger) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = (getValue(second, variables) > getValue(third, variables)) ? 1 : 0;
+            } else if (type == OperationType.testLess) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = (getValue(second, variables) < getValue(third, variables)) ? 1 : 0;
+            } else if (type == OperationType.testEqualBigger) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = (getValue(second, variables) >= getValue(third, variables)) ? 1 : 0;
+            } else if (type == OperationType.testEqualLess) {
+                Operand second = operands.get(1);
+                Operand third = operands.get(2);
+                result = (getValue(second, variables) <= getValue(third, variables)) ? 1 : 0;
+            }
+            variables.put(resultName, result);
+            return result;
+        } else {
+//            if (type == OperationType.loop) {
+//
+//            } else if (type == OperationType.endLoop) {
+//
+//            }
+            return 1;
         }
-        variables.put(resultName, result);
     }
 }

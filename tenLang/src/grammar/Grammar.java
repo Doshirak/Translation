@@ -1,10 +1,7 @@
 package grammar;
 
-import javafx.util.Pair;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -41,7 +38,6 @@ public class Grammar {
     }
 
     public void read(Scanner scanner){
-        ArrayList<String> strings = new ArrayList<String>();
         while (scanner.hasNext()) {
             String name = trim(scanner.next());
             NotTerm notTerm = getNoTerm(name);
@@ -59,9 +55,6 @@ public class Grammar {
                     currentRule.add(ruleNoTerm);
                 } else if (Pattern.matches("\\[\\w+\\]", current)) {
                     currentRule.add(trim(current), true);
-                } else if (Pattern.matches("\\{.+\\}", current)) {
-                    currentRule.setHasBraces(true);
-                    currentRule.add(trim(current), false);
                 } else {
                     currentRule.add(trim(current), false);
                 }
@@ -72,10 +65,13 @@ public class Grammar {
     public void write() {
         for (NotTerm notTerm : noTerms.values()) {
             System.out.println(notTerm);
+            for (Rule rule : notTerm.getTermRules()) {
+                System.out.println(" " + rule);
+            }
+            for (Rule rule : notTerm.getNoTermRules()) {
+                System.out.println(" " + rule);
+            }
         }
-    }
-    public void write(String filename) {
-
     }
     public NotTerm getFirstNotTerm() {
         return first;

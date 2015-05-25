@@ -1,8 +1,8 @@
 <Text> ::=
 	<DeclarationBlock> "program:" <ExecCode> ;
 <ExecCode> ::=
-    <LoopCode> |
     <ConsecCode> |
+    <LoopCode> |
     <ParallelCode> |
 	<Body> |
 	[EMPTY] ;
@@ -11,17 +11,17 @@
 <ParallelCode> ::=
     <Braces> "U" <Braces> ;
 <Braces> ::=
-    {(} <ExecCode> {)} ;
+    "(" <ExecCode> ")" ;
 <LoopCode> ::=
-	{(} <ExecCode> {)*} ;
+	"(" <ExecCode> ")*" ;
 <Body> ::=
 	<Assignment> |
 	<Test> |
 	<Operator> ;
 <Assignment> ::=
-	[VARIABLE] ":=" <Expression> ;
+	<Variable> ":=" <Expression> ;
 <Test> ::=
-    {(} <Condition> {)?}  ;
+    "(" <Condition> ")?"  ;
 <Condition> ::=
 	<Expression> ">" <Expression> |
 	<Expression> "<" <Expression> |
@@ -38,9 +38,11 @@
     <Declaration> |
     [EMPTY] ;
 <Declaration> ::=
-	"var" [VARIABLE] ":" <Type> ;
+	"var" <Variable> ":" <Type> ;
+<Variable> ::=
+    [VARIABLE] ;
 <Type> ::=
-	"array" "of" <Type> |
+	"arrayOf" <Type> |
 	"int" ;
 <Expression> ::=
     <Sum> |
